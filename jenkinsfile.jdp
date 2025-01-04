@@ -14,7 +14,7 @@ pipeline {
         stage('test'){
             steps {
                 withSonarQubeEnv(installationName: 'sonar', credentialsId: 'sonar-cred') {
-                    sh 'mvn sonar:sonar -Dsonar.projectKey=backend'
+                    sh '/opt/maven/bin/mvn sonar:sonar -Dsonar.projectKey=backend'
                 }
             }
         }
