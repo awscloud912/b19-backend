@@ -3,32 +3,36 @@ pipeline {
     stages {
         stage('pull'){
             steps {
-                echo 'PULL SUCCESS'
+                git branch: 'dev', url: 'https://github.com/shubhamkalsait/b19-backend.git'
             }
         }
         stage('build'){
             steps {
-                echo "Build Success"
+                sh '/opt/maven/bin/mvn clean package'
             }
         }
         stage('test'){
             steps {
-                echo "test success"
+                withSonarQubeEnv(installationName: 'sonar', credentialsId: 'sonar-cred') {
+                    sh 'mvn sonar:sonar -Dsonar.projectKey=backend'
+                }
             }
         }
-        stage('docker-build'){
+        stage('QualityGate'){
             steps {
-                echo "docker image build"
-            }
-        }
-        stage('docker-push'){
-            steps {
-                echo "push docker image"
+                timeout(10) {
+                    waitForQualityGate abortPipeline: true, credentialsId: 'sonar-cred'
+                }
             }
         }
         stage('deploy'){
             steps {
-                echo "kubectl apply"
+                sh '''
+                    docker build . -t shubhamkalsait1/b19-backend:latest
+                    docker push shubhamkalsait1/b19-backend:latest
+                    docker rmi shubhamkalsait1/b19-backend:latest
+                    kubectl apply -f ./yaml/
+                '''
             }
         }
     }
