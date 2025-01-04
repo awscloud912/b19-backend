@@ -1,8 +1,4 @@
-FROM ubuntu:latest
-RUN sudo apt update -y && sudo apt install openjdk-8-jdk -y
-RUN sudo apt install maven -y
-COPY . /opt
-WORKDIR /opt
-RUN mvn clean package -Dmaven.test.skip=true
+FROM openjdk:11-jdk-slim-sid
+COPY target/*.jar /opt/
 EXPOSE 8080
-CMD java -jar target/spring-backend-v1.jar
+CMD java -jar /opt/spring-backend-v1.jar
